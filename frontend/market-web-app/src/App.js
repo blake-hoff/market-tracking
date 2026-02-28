@@ -2,7 +2,7 @@ import './App.css';
 import * as React from 'react';
 
 import Button from '@mui/material/Button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {Table, TableBody, TableCell, TableRow, TableHead} from '@mui/material';
 
 const App = () => {
@@ -25,26 +25,22 @@ const App = () => {
 		}
 	};
 
-    async function getAll() { //view all items
-		let path = '/item'
-		let url = link + path
-		console.log(url)
+	const getAll = React.useCallback(async () => {
+		let path = '/item';
+		let url = link + path;
 
-		try{
+		try {
 			const response = await fetch(url);
 			const text = await response.text();
 			const cleanText = text.replace(/:NaN/g, ':null');
 			const newData = JSON.parse(cleanText);
 
-			console.log(newData.items)
 			setTableData(newData.items);
-        }
+		} 
 		catch (err) {
 			console.log("Something went wrong!", err);
-			alert(err);
-			return null;
 		}
-    }
+	}, [link]);
 
 	async function getPrice(id) {
 		// console.log(id);
@@ -68,6 +64,8 @@ const App = () => {
 		}
 	}
 
+	useEffect(() => {getAll();}, [getAll]);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -89,7 +87,6 @@ const App = () => {
 					<TableCell>ID</TableCell>
 					<TableCell>Name</TableCell>
           			<TableCell>Price</TableCell>
-					{/* <TableCell>Price</TableCell> */}
 					<TableCell>Date Created</TableCell>
 					</TableRow>
 				</TableHead>
@@ -103,7 +100,6 @@ const App = () => {
 						{prices[item.id] !== undefined ? (<>{prices[item.id]}</>) 
 								: (<Button variant="outlined" onClick={() => handleGetPrice(item.id)}>Get Price</Button>)}
 					</TableCell>
-					{/* <TableCell>{(<Button variant="outlined" onClick={() => handleGetPrice(item.id)}>Get Price</Button>)}</TableCell> */}
 					<TableCell>{item.date}</TableCell>
 					</TableRow>
 				))}

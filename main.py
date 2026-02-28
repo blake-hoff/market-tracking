@@ -37,7 +37,7 @@ def get_all_items():
 
     return jsonify({
         'success': True,
-        'items': [{'id': item.roblox_item_id, 'name': item.name, 'date': item.created_at} for item in items]
+        'items': [{'id': item.roblox_item_id, 'name': item.name, 'date': item.created_at, 'icon': item.icon} for item in items]
     }), 200
 
 #Create or return an itemID to the database
