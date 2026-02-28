@@ -66,12 +66,13 @@ def get_item_img_url(item_id, roblosecurity):
 def getItemPrice(item_id, roblosecurity): # returns price, item_name, collectableID
     data = get_roblox_item_details(item_id, roblosecurity)
     # print(data)
+
     if data:
         if isinstance(data, dict):
             item = data
         else:
             print("Unexpected response format.")
-            return
+            return data
 
         limited = 'LimitedUnique' in item.get('itemRestrictions') or 'Limited' in item.get('itemRestrictions')
         if limited:
@@ -80,6 +81,7 @@ def getItemPrice(item_id, roblosecurity): # returns price, item_name, collectabl
             return item.get('price')
 
     else:
+        # print(type(data))
         print("No item data returned.")
         return data
 

@@ -4,6 +4,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from database import db, User, UserItem, Item
 from functions import load_roblosecurity, get_roblox_item_details, get_item_img_url, getItemPrice
+import requests
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # Enables CORS to allow requests from the React frontend
@@ -36,7 +37,7 @@ def get_all_items():
 
     return jsonify({
         'success': True,
-        'items': [{'id': item.roblox_item_id, 'name': item.name} for item in items]
+        'items': [{'id': item.roblox_item_id, 'name': item.name, 'date': item.created_at} for item in items]
     }), 200
 
 #Create or return an itemID to the database
@@ -66,7 +67,7 @@ def get_item_details(item_id):
             productID = itemDetails.get('productId')
             originalPrice = itemDetails.get('price')
             isLimited = 'LimitedUnique' in itemDetails.get('itemRestrictions') or 'Limited' in itemDetails.get('itemRestrictions')
-            iconUrl = get_item_img_url(item_id, cookie_key)
+            iconUrl = get_item_img_url(item_id, cookie_key) # images sizes: 110, 150, 420
 
             # print('LimitedUnique' in itemDetails.get('itemRestrictions') or 'Limited' in itemDetails.get('itemRestrictions'))
             # print(itemDetails)
@@ -109,31 +110,32 @@ def get_item_details(item_id):
 def get_item_price(item_id):
     # call to the function in functions.py, to make the online request to the roblox API
     itemDetails = getItemPrice(item_id, cookie_key)
+    # print(type(itemDetails))
+    # print(itemDetails)
+    if type(itemDetails) is int: # make sure the itemDetails are an integer (what a price should be)
+        item_data = {
+            "id": item_id,
+            "price": itemDetails
+        }
 
-    if not itemDetails: # if the itemDetails fails due to not a 404
+        # for adding it to the history table.
+        # item = ItemPrice(roblox_item_id=item_id, price=itemDetails)
+        # db.session.add(item)
+        # db.session.commit()
+
         return jsonify({
-            'success': False,
-            'message': "Could not get item price.",
-            'errors-roblox': itemDetails,
-            'item': {"id": item_id}
-            # 'status-code': itemDetails
-        }), 500
+            'success': True,
+            'item': item_data
+        }), 200
 
-    # for adding it to the history table.
-    # if itemDetails is not None:
-    #     itemprice = ItemPrice(roblox_item_id=item_id, price=itemDetails)
-    #     db.session.add(itemprice)
-    #     db.session.commit()
-
-    item_data = {
-        "id": item_id,
-        "price": itemDetails
-    }
 
     return jsonify({
-        'success': True,
-        'item': item_data
-    }), 200
+        'success': False,
+        'message': "Could not get item price.",
+        'errors-roblox': itemDetails.json(),
+        "id": item_id
+        # 'status-code': itemDetails
+    }), 500
 
 # For direct execution
 if __name__ == '__main__':
