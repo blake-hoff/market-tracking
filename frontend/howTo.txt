@@ -1,0 +1,4 @@
+This file is for how I created my app.
+
+npx create-react-app market-web-app
+
