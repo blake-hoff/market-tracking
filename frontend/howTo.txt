@@ -5,5 +5,9 @@ npx create-react-app market-web-app
 remove the tracked files from github but not from your actual system/local version:
 git rm -r --cached {foldername}
 
-for instance: git rm -r --cached __pycache__
-then commit the changes.
+for instance:
+git rm -r --cached __pycache__
+or
+git rm -r --cached .DS_Store
+
+Then add these to .gitignore, then commit the changes.
