@@ -3,8 +3,9 @@ import * as React from 'react';
 
 import Button from '@mui/material/Button';
 import { useState, useEffect } from 'react';
-import {Grid, Card, CardMedia, CardContent, Typography, Box} from '@mui/material';
-// import RefreshIcon from '@mui/icons-material/Refresh';
+import {Grid, Card, CardMedia, CardContent, Typography, Box, IconButton, AppBar, Toolbar} from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import SettingsIcon from "@mui/icons-material/Settings";
 
 const App = () => {
     const [gridData, setGridData] = useState([]);
@@ -65,60 +66,91 @@ const App = () => {
 		}
 	}
 
+	async function getItemDetails(id) {
+		// console.log(id);
+		let path = '/item/' + id
+		let url = link + path
+		console.log(url)
+
+		try{
+			const response = await fetch(url);
+			const text = await response.text();
+			const cleanText = text.replace(/:NaN/g, ':null');
+			const newData = JSON.parse(cleanText);
+
+			console.log(newData.item)
+			// return newData.item
+        }
+		catch (err) {
+			console.log("Something went wrong!", err);
+			alert(err);
+			return null;
+		}
+	}
+
 	useEffect(() => {getAll();}, [getAll]);
 
   return (
     <div className="App">
-			<header className="App-header">
-				<img src={'https://tr.rbxcdn.com/180DAY-8b91ad6a742a8bfb3b12c6cff5e3cc54/110/110/Hat/Png/noFilter'} alt="logo"/>
-
-				{/* <a
-					className="App-link"
-					href="https://www.roblox.com/catalog"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					Roblox Catalog
-				</a> */}
-
-				<Box display="flex" justifyContent="left" mb={3}>
-					<Button variant="contained" onClick={getAll}>Refresh</Button>
-					{/* <IconButton color="secondary" onClick={getAll}>
-						<RefreshIcon />
-					</IconButton> */}
+		<AppBar position="static" color="primary">
+			<Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+				<Box display="flex" alignItems="center" gap={2}>
+				<img
+					src="https://tr.rbxcdn.com/180DAY-8b91ad6a742a8bfb3b12c6cff5e3cc54/150/150/Hat/Png/noFilter"
+					alt="mrkttrak"
+					style={{ height: 35 }}
+				/>
+				<Typography variant="h6" fontWeight="bold">
+					RoTrack
+				</Typography>
 				</Box>
+
+				<IconButton color="inherit">
+					<SettingsIcon />
+				</IconButton>
+
+			</Toolbar>
+		</AppBar>
+
+		<Box sx={{display: "flex", alignItems: "center", gap: 2, padding: 2, borderBottom: "1px solid rgba(255,255,255,0.1)"}}>
+			<IconButton onClick={getAll} sx={{backgroundColor: "secondary.main", color: "white", "&:hover": { backgroundColor: "secondary.dark" }}}>
+				<RefreshIcon />
+			</IconButton>
+
+			<Button variant="outlined">Add Item</Button>
+			<Button variant="outlined">Search</Button>
+			<Button variant="outlined">Toggle Source</Button>
+
+		</Box>
+
+		<Grid container spacing={2} mt={4} justifyContent={'center'}>
+		{gridData.map((item) => (
+			<Grid item xs={12} sm={6} md={4} key={item.id}>
+				<Card sx={{ backgroundColor: "#222", color: "white" }}>
+					<CardMedia component="img" height="400" image={item.icon} alt={item.name}/>
 					
-				<Grid container spacing={2} mt={4} justifyContent={'center'}>
-				{gridData.map((item) => (
-					<Grid item xs={12} sm={6} md={4} key={item.id}>
-						<Card sx={{ backgroundColor: "#222", color: "white" }}>
-							<CardMedia component="img" height="420" image={item.icon} alt={item.name}/>
-							
-							<CardContent>
-								<Typography variant="h6">
-									{item.name} (ID: {item.id})
-								</Typography>
+					<CardContent>
+						<Typography variant="h6">
+							{item.name} ({item.id})
+						</Typography>
 
-								<Typography variant="body2" sx={{ marginTop: 1 }}>
-									Price: {prices[item.id] !== undefined ? prices[item.id] : (
-									<Button size="small" variant="outlined" onClick={() => handleGetPrice(item.id)}>
-										Get Price
-									</Button>
-									)}
-								</Typography>
+						<Typography variant="body2" sx={{ marginTop: 1 }}>
+							Price: {prices[item.id] !== undefined ? prices[item.id] : (
+							<Button size="small" variant="outlined" onClick={() => handleGetPrice(item.id)}>
+								Get Price
+							</Button>
+							)}
+						</Typography>
 
-								<Typography variant="caption">
-									{/* Description: {item.description} */}
-									Quantity: {item.quantity}
-								</Typography>
-							</CardContent>
-						</Card>
-					</Grid>
-				))}
-				</Grid>
-
-			</header>
-
+						<Typography variant="caption">
+							{/* Description: {item.description} */}
+							Quantity: {item.quantity}
+						</Typography>
+					</CardContent>
+				</Card>
+			</Grid>
+		))}
+		</Grid>
     </div>
   );
 }
