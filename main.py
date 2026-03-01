@@ -37,7 +37,7 @@ def get_all_items():
 
     return jsonify({
         'success': True,
-        'items': [{'id': item.roblox_item_id, 'name': item.name, 'date': item.created_at, 'icon': item.icon} for item in items]
+        'items': [{'id': item.roblox_item_id, 'name': item.name, 'date': item.created_at, 'icon': item.icon, 'description': item.description, 'quantity': item.quantity} for item in items]
     }), 200
 
 #Create or return an itemID to the database
@@ -69,9 +69,6 @@ def get_item_details(item_id):
             isLimited = 'LimitedUnique' in itemDetails.get('itemRestrictions') or 'Limited' in itemDetails.get('itemRestrictions')
             iconUrl = get_item_img_url(item_id, cookie_key) # images sizes: 110, 150, 420
 
-            # print('LimitedUnique' in itemDetails.get('itemRestrictions') or 'Limited' in itemDetails.get('itemRestrictions'))
-            # print(itemDetails)
-            # print(f'Got info from the Roblox API.')
             #add to database
             item = Item(roblox_item_id=item_id,
                         roblox_product_id=productID,
@@ -91,7 +88,7 @@ def get_item_details(item_id):
         "description": item.description,
         "quantity": item.quantity,
         "time-created": item.created_at,
-        "icon-url": item.icon
+        "icon": item.icon
     }
 
     return jsonify({

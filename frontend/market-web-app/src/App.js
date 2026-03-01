@@ -3,10 +3,11 @@ import * as React from 'react';
 
 import Button from '@mui/material/Button';
 import { useState, useEffect } from 'react';
-import {Table, TableBody, TableCell, TableRow, TableHead} from '@mui/material';
+import {Grid, Card, CardMedia, CardContent, Typography, Box} from '@mui/material';
+// import RefreshIcon from '@mui/icons-material/Refresh';
 
 const App = () => {
-    const [tableData, setTableData] = useState([]);
+    const [gridData, setGridData] = useState([]);
 	const [prices, setPrices] = useState({});
 
     let link = 'http://127.0.0.1:5000/api'
@@ -35,7 +36,7 @@ const App = () => {
 			const cleanText = text.replace(/:NaN/g, ':null');
 			const newData = JSON.parse(cleanText);
 
-			setTableData(newData.items);
+			setGridData(newData.items);
 		} 
 		catch (err) {
 			console.log("Something went wrong!", err);
@@ -68,45 +69,55 @@ const App = () => {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={'https://tr.rbxcdn.com/180DAY-8b91ad6a742a8bfb3b12c6cff5e3cc54/110/110/Hat/Png/noFilter'} alt="logo"/>
+			<header className="App-header">
+				<img src={'https://tr.rbxcdn.com/180DAY-8b91ad6a742a8bfb3b12c6cff5e3cc54/110/110/Hat/Png/noFilter'} alt="logo"/>
 
-        {/* <a
-          className="App-link"
-          href="https://www.roblox.com/catalog"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Roblox Catalog
-        </a> */}
-			<Button variant="contained" color="secondary" onClick={() => getAll()}>Refresh</Button>
-			
-			<Table className="tableInfo"   sx={{ width: '50%', '& .MuiTableCell-root': {color: 'white',}}}>
-				<TableHead>
-					<TableRow>
-					<TableCell>ID</TableCell>
-					<TableCell>Name</TableCell>
-          			<TableCell>Price</TableCell>
-					<TableCell>Date Created</TableCell>
-					</TableRow>
-				</TableHead>
+				{/* <a
+					className="App-link"
+					href="https://www.roblox.com/catalog"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					Roblox Catalog
+				</a> */}
 
-				<TableBody>
-				{tableData.map((item) => (
-					<TableRow key={item.id}>
-					<TableCell>{item.id}</TableCell>
-					<TableCell>{item.name}</TableCell>
-					<TableCell>
-						{prices[item.id] !== undefined ? (<>{prices[item.id]}</>) 
-								: (<Button variant="outlined" onClick={() => handleGetPrice(item.id)}>Get Price</Button>)}
-					</TableCell>
-					<TableCell>{item.date}</TableCell>
-					</TableRow>
+				<Box display="flex" justifyContent="left" mb={3}>
+					<Button variant="contained" onClick={getAll}>Refresh</Button>
+					{/* <IconButton color="secondary" onClick={getAll}>
+						<RefreshIcon />
+					</IconButton> */}
+				</Box>
+					
+				<Grid container spacing={2} mt={4} justifyContent={'center'}>
+				{gridData.map((item) => (
+					<Grid item xs={12} sm={6} md={4} key={item.id}>
+						<Card sx={{ backgroundColor: "#222", color: "white" }}>
+							<CardMedia component="img" height="420" image={item.icon} alt={item.name}/>
+							
+							<CardContent>
+								<Typography variant="h6">
+									{item.name} (ID: {item.id})
+								</Typography>
+
+								<Typography variant="body2" sx={{ marginTop: 1 }}>
+									Price: {prices[item.id] !== undefined ? prices[item.id] : (
+									<Button size="small" variant="outlined" onClick={() => handleGetPrice(item.id)}>
+										Get Price
+									</Button>
+									)}
+								</Typography>
+
+								<Typography variant="caption">
+									{/* Description: {item.description} */}
+									Quantity: {item.quantity}
+								</Typography>
+							</CardContent>
+						</Card>
+					</Grid>
 				))}
-				</TableBody>
-			</Table>
+				</Grid>
 
-		</header>
+			</header>
 
     </div>
   );
