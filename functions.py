@@ -31,8 +31,8 @@ def get_roblox_item_details(item_id, roblosecurity):
 
 def get_item_img_url(item_id, roblosecurity):
     img_url = ''
-    # pixel_size = 420
-    pixel_size = 110
+    pixel_size = 420
+    # pixel_size = 110
     # pixel_size = 150
 
     url = f'https://thumbnails.roblox.com/v1/assets?assetIds={item_id}&format=png&isCircular=false&size={pixel_size}x{pixel_size}'

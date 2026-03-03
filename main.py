@@ -2,9 +2,10 @@ import datetime
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from database import db, User, UserItem, Item
+from database import db, Item, ItemPriceHistory
 from functions import load_roblosecurity, get_roblox_item_details, get_item_img_url, getItemPrice
 import requests
+from sqlalchemy import asc
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # Enables CORS to allow requests from the React frontend
@@ -116,9 +117,9 @@ def get_item_price(item_id):
         }
 
         # for adding it to the history table.
-        # item = ItemPrice(roblox_item_id=item_id, price=itemDetails)
-        # db.session.add(item)
-        # db.session.commit()
+        item = ItemPriceHistory(item_id=item_id, price=itemDetails)
+        db.session.add(item)
+        db.session.commit()
 
         return jsonify({
             'success': True,
@@ -133,6 +134,27 @@ def get_item_price(item_id):
         "id": item_id
         # 'status-code': itemDetails
     }), 500
+
+#Create or return an itemID to the database
+@app.route('/api/item-price-history/<int:item_id>', methods=['GET'])
+def get_item_price_history(item_id):
+    # get the price history of the current item id selected.
+    price_entries = (
+        ItemPriceHistory.query
+        .filter_by(item_id=item_id)
+        .order_by(ItemPriceHistory.created_at.asc())
+        .all()
+    )
+
+    data = [
+        {"price": entry.price, "created_at": entry.created_at.isoformat()} for entry in price_entries
+    ]
+
+    return jsonify({
+        'success': True,
+        "item_id": item_id,
+        "history": data
+    }), 200
 
 # For direct execution
 if __name__ == '__main__':
