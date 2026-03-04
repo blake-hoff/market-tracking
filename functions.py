@@ -1,4 +1,6 @@
 # from bs4 import BeautifulSoup
+from tkinter.ttk import Label
+
 import requests
 import json
 import re
@@ -37,17 +39,22 @@ def get_item_img_url(item_id, roblosecurity):
 
     url = f'https://thumbnails.roblox.com/v1/assets?assetIds={item_id}&format=png&isCircular=false&size={pixel_size}x{pixel_size}'
 
+    # headers = {
+    #           "accept": "application/json, text/plain, */*",
+    #           "accept-language": "en-US,en;q=0.9",
+    #           "priority": "u=1, i",
+    #           "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+    #           "sec-ch-ua-mobile": "?0",
+    #           "sec-ch-ua-platform": "\"macOS\"",
+    #           "sec-fetch-dest": "empty",
+    #           "sec-fetch-mode": "cors",
+    #           "sec-fetch-site": "same-site"
+    #       }
     headers = {
-              "accept": "application/json, text/plain, */*",
-              "accept-language": "en-US,en;q=0.9",
-              "priority": "u=1, i",
-              "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
-              "sec-ch-ua-mobile": "?0",
-              "sec-ch-ua-platform": "\"macOS\"",
-              "sec-fetch-dest": "empty",
-              "sec-fetch-mode": "cors",
-              "sec-fetch-site": "same-site"
-          }
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+        "Referer": "https://www.roblox.com",
+    }
     cookies = {
         ".ROBLOSECURITY": roblosecurity
     }
@@ -96,6 +103,53 @@ def load_roblosecurity(path="cookie.txt") -> str:
     m = re.search(r"(?:\.?ROBLOSECURITY)\s*=\s*(_\|.+)", raw)
     if m:
         return m.group(1)
+
+def searchCatalog(keyword, roblosecurity):
+    search_result = '' # placeholder for search_result; won't be a string, but if it is we know it went wrong
+    url = f"https://catalog.roblox.com/v2/search/items/details?keyword={keyword}&taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&salesTypeFilter=1&sortType=5&includeNotForSale=true&limit=120"
+    # headers = {
+    #     "accept": "application/json, text/plain, */*",
+    #     "accept-language": "en-US,en;q=0.9",
+    #     "priority": "u=1, i",
+    #     "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+    #     "sec-ch-ua-mobile": "?0",
+    #     "sec-ch-ua-platform": "\"macOS\"",
+    #     "sec-fetch-dest": "empty",
+    #     "sec-fetch-mode": "cors",
+    #     "sec-fetch-site": "same-site",
+    #     "Referer": "https://www.roblox.com/"
+    # }
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+        "Referer": "https://www.roblox.com",
+    }
+    cookies = {
+        ".ROBLOSECURITY": roblosecurity
+    }
+
+    response = requests.get(url, headers=headers, cookies=cookies)
+    # print(url)
+    # print(response.json().get('data'))
+    # manyItemsMess = response.json().get('data')
+    # for item in manyItemsMess:
+    #     item_id = item.get('id')
+    #     item_name = item.get('name')
+    # data = [
+    #     {"price": entry.price, "created_at": entry.created_at.isoformat()} for entry in price_entries
+    # ]
+
+    if response.status_code == 200:
+        try:
+            manyItemsMess = response.json().get('data')
+            data = [{"id": item.get('id'), 'name': item.get('name')} for item in manyItemsMess]
+
+            return data
+        except json.JSONDecodeError:
+            print("Error decoding JSON.")
+            return None
+    else:
+        return search_result
 
 
 def printItemInfo(item_id):

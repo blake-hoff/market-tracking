@@ -3,7 +3,7 @@ import datetime
 from flask import Flask, jsonify
 from flask_cors import CORS
 from database import db, Item, ItemPriceHistory
-from functions import load_roblosecurity, get_roblox_item_details, get_item_img_url, getItemPrice
+from functions import load_roblosecurity, get_roblox_item_details, get_item_img_url, getItemPrice, searchCatalog
 import requests
 from sqlalchemy import asc
 
@@ -108,6 +108,7 @@ def get_item_details(item_id):
 def get_item_price(item_id):
     # call to the function in functions.py, to make the online request to the roblox API
     itemDetails = getItemPrice(item_id, cookie_key)
+    # responsetemp = searchCatalog("dominus", cookie_key)
     # print(type(itemDetails))
     # print(itemDetails)
     if type(itemDetails) is int: # make sure the itemDetails are an integer (what a price should be)
@@ -135,7 +136,28 @@ def get_item_price(item_id):
         # 'status-code': itemDetails
     }), 500
 
-#Create or return an itemID to the database
+@app.route('/api/search-roblox-catalog/<string:keyword>', methods=['GET'])
+def search_roblox_catalog(keyword): # taxonomy does the accessories.
+    # call to the function in functions.py, to make the online request to the roblox API
+    itemDetails = searchCatalog(keyword, cookie_key)
+    print(type(itemDetails))
+    print(itemDetails)
+    if type(itemDetails) is list: # make sure the itemDetails are a list
+        return jsonify({
+            'success': True,
+            'item': itemDetails
+        }), 200
+
+
+    return jsonify({
+        'success': False,
+        'message': "Could not get item price.",
+        # 'errors-roblox': itemDetails.json(),
+        # "id": itemDetails
+        # 'status-code': itemDetails
+    }), 500
+
+#get the item price history from the database
 @app.route('/api/item-price-history/<int:item_id>', methods=['GET'])
 def get_item_price_history(item_id):
     # get the price history of the current item id selected.

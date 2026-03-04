@@ -15,6 +15,8 @@ const App = () => {
   	const [itemID, setItemID] = React.useState('');
 	const [expanded, setExpanded] = useState({});
 
+	const [searchValue, setSearchValue] = useState('');
+
     let link = 'http://127.0.0.1:5000/api'
 
 	const handleToggleExpand = (id) => {
@@ -54,6 +56,19 @@ const App = () => {
 		}
 	};
 
+	const handleSearch = async () => {
+		try {
+			const response = await searchCatalog(searchValue);
+			// console.log(response);
+
+			// setSearchValue('');
+			// getAll();
+		} 
+		catch (err) {
+			console.error(err);
+		}
+	};
+
 	const getAll = React.useCallback(async () => {
 		let path = '/item';
 		let url = link + path;
@@ -70,6 +85,27 @@ const App = () => {
 			console.log("Something went wrong!", err);
 		}
 	}, [link]);
+
+	async function searchCatalog(keyword) {
+		let path = '/search-roblox-catalog/' + keyword
+		let url = link + path
+		console.log(url)
+
+		try{
+			const response = await fetch(url);
+			const text = await response.text();
+			const cleanText = text.replace(/:NaN/g, ':null');
+			const newData = JSON.parse(cleanText);
+
+			console.log(newData.item)
+			return newData.item
+        }
+		catch (err) {
+			console.log("Something went wrong!", err);
+			alert(err);
+			return null;
+		}
+	}
 
 	async function getPrice(id) {
 		// console.log(id);
@@ -148,6 +184,17 @@ const App = () => {
 				value={itemID} 
 				onChange={(event) => {setItemID(event.target.value);}}
 			/>
+
+			<Button onClick={() => handleSearch()} variant="outlined">Search</Button>
+			
+			<TextField 
+				id="outlined-controlled" 
+				sx={{input: { color: "white" }, label: {color: "white"}, border: "1px solid rgba(0,0,255,0)", "&:hover": { backgroundColor: "secondary.dark" }}}
+				label="Search here" 
+				value={searchValue} 
+				onChange={(event) => {setSearchValue(event.target.value);}}
+			/>
+
 		</Box>
 
 
