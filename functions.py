@@ -106,7 +106,13 @@ def load_roblosecurity(path="cookie.txt") -> str:
 
 def searchCatalog(keyword, roblosecurity):
     search_result = '' # placeholder for search_result; won't be a string, but if it is we know it went wrong
-    url = f"https://catalog.roblox.com/v2/search/items/details?keyword={keyword}&taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&salesTypeFilter=1&sortType=5&includeNotForSale=true&limit=120"
+    url = ''
+    keyword = keyword.strip()
+    if keyword == '':
+        url =  f"https://catalog.roblox.com/v2/search/items/details?taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&salesTypeFilter=2&sortType=5&includeNotForSale=true&limit=120"
+    else:
+        keyword = keyword.replace(" ", "+")
+        url = f"https://catalog.roblox.com/v2/search/items/details?keyword={keyword}&taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&salesTypeFilter=2&sortType=5&includeNotForSale=true&limit=120"
     # headers = {
     #     "accept": "application/json, text/plain, */*",
     #     "accept-language": "en-US,en;q=0.9",
@@ -129,7 +135,7 @@ def searchCatalog(keyword, roblosecurity):
     }
 
     response = requests.get(url, headers=headers, cookies=cookies)
-    # print(url)
+    print(url)
     # print(response.json().get('data'))
     # manyItemsMess = response.json().get('data')
     # for item in manyItemsMess:

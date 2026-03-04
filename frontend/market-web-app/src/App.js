@@ -87,7 +87,7 @@ const App = () => {
 	}, [link]);
 
 	async function searchCatalog(keyword) {
-		let path = '/search-roblox-catalog/' + keyword
+		let path = '/search-roblox-catalog?keyword=' + keyword
 		let url = link + path
 		console.log(url)
 
@@ -171,10 +171,12 @@ const App = () => {
 
 
 		<Box sx={{display: "flex", alignItems: "center", gap: 2, padding: 2, borderBottom: "1px solid rgba(255,255,255,0.1)"}}>
+			{/* refresh button */}
 			<IconButton onClick={getAll} sx={{backgroundColor: "secondary.main", color: "white", "&:hover": { backgroundColor: "secondary.dark" }}}>
 				<RefreshIcon />
 			</IconButton>
 
+			{/* add item */}
 			<Button onClick={() => handleAddItem()} variant="outlined">Add Item</Button>
 			
 			<TextField 
@@ -185,6 +187,7 @@ const App = () => {
 				onChange={(event) => {setItemID(event.target.value);}}
 			/>
 
+			{/* search catalog*/}
 			<Button onClick={() => handleSearch()} variant="outlined">Search</Button>
 			
 			<TextField 

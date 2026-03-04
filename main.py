@@ -1,6 +1,6 @@
 import datetime
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database import db, Item, ItemPriceHistory
 from functions import load_roblosecurity, get_roblox_item_details, get_item_img_url, getItemPrice, searchCatalog
@@ -136,11 +136,13 @@ def get_item_price(item_id):
         # 'status-code': itemDetails
     }), 500
 
-@app.route('/api/search-roblox-catalog/<string:keyword>', methods=['GET'])
-def search_roblox_catalog(keyword): # taxonomy does the accessories.
+@app.route('/api/search-roblox-catalog', methods=['GET'])
+def search_roblox_catalog(): # taxonomy does the accessories.
     # call to the function in functions.py, to make the online request to the roblox API
+    keyword = request.args.get('keyword', '').strip()
+    # print(keyword)
     itemDetails = searchCatalog(keyword, cookie_key)
-    print(type(itemDetails))
+    # print(type(itemDetails))
     print(itemDetails)
     if type(itemDetails) is list: # make sure the itemDetails are a list
         return jsonify({
