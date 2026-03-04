@@ -107,24 +107,15 @@ def load_roblosecurity(path="cookie.txt") -> str:
 def searchCatalog(keyword, roblosecurity):
     search_result = '' # placeholder for search_result; won't be a string, but if it is we know it went wrong
     url = ''
+    # salesFilter = 2 # means it will only be limited items
+    salesFilter = 1 # means it will be anything
+
     keyword = keyword.strip()
     if keyword == '':
-        url =  f"https://catalog.roblox.com/v2/search/items/details?taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&salesTypeFilter=2&sortType=5&includeNotForSale=true&limit=120"
+        url =  f"https://catalog.roblox.com/v2/search/items/details?taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&salesTypeFilter={salesFilter}&sortType=5&includeNotForSale=true&limit=120"
     else:
         keyword = keyword.replace(" ", "+")
-        url = f"https://catalog.roblox.com/v2/search/items/details?keyword={keyword}&taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&salesTypeFilter=2&sortType=5&includeNotForSale=true&limit=120"
-    # headers = {
-    #     "accept": "application/json, text/plain, */*",
-    #     "accept-language": "en-US,en;q=0.9",
-    #     "priority": "u=1, i",
-    #     "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
-    #     "sec-ch-ua-mobile": "?0",
-    #     "sec-ch-ua-platform": "\"macOS\"",
-    #     "sec-fetch-dest": "empty",
-    #     "sec-fetch-mode": "cors",
-    #     "sec-fetch-site": "same-site",
-    #     "Referer": "https://www.roblox.com/"
-    # }
+        url = f"https://catalog.roblox.com/v2/search/items/details?keyword={keyword}&taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&salesTypeFilter={salesFilter}&sortType=5&includeNotForSale=true&limit=120"
     headers = {
         "User-Agent": USER_AGENT,
         "Accept": "application/json",
@@ -136,14 +127,6 @@ def searchCatalog(keyword, roblosecurity):
 
     response = requests.get(url, headers=headers, cookies=cookies)
     print(url)
-    # print(response.json().get('data'))
-    # manyItemsMess = response.json().get('data')
-    # for item in manyItemsMess:
-    #     item_id = item.get('id')
-    #     item_name = item.get('name')
-    # data = [
-    #     {"price": entry.price, "created_at": entry.created_at.isoformat()} for entry in price_entries
-    # ]
 
     if response.status_code == 200:
         try:

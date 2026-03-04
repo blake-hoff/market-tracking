@@ -16,6 +16,8 @@ const App = () => {
 	const [expanded, setExpanded] = useState({});
 
 	const [searchValue, setSearchValue] = useState('');
+	const [catalogData, setCatalogData] = useState([]); // for the catalog scrollable window
+	const [showCatalog, setShowCatalog] = useState(false);
 
     let link = 'http://127.0.0.1:5000/api'
 
@@ -35,6 +37,20 @@ const App = () => {
 				...prev,
 				[id]: price
 			}));
+		} 
+		catch (err) {
+			console.error(err);
+		}
+	};
+
+	const handleItemClick = async (id) => {
+		try {
+			// setItemID(id)
+			const response = await getItemDetails(id);
+			console.log(response);
+
+			// setItemID('');
+			getAll();
 		} 
 		catch (err) {
 			console.error(err);
@@ -62,6 +78,7 @@ const App = () => {
 			// console.log(response);
 
 			// setSearchValue('');
+			setShowCatalog(true);
 			// getAll();
 		} 
 		catch (err) {
@@ -96,9 +113,10 @@ const App = () => {
 			const text = await response.text();
 			const cleanText = text.replace(/:NaN/g, ':null');
 			const newData = JSON.parse(cleanText);
-
+			
 			console.log(newData.item)
-			return newData.item
+			setCatalogData(newData.item)
+			// return newData.item
         }
 		catch (err) {
 			console.log("Something went wrong!", err);
@@ -197,8 +215,35 @@ const App = () => {
 				value={searchValue} 
 				onChange={(event) => {setSearchValue(event.target.value);}}
 			/>
-
+		{/* catalog search results */}
+		{showCatalog && catalogData.length > 0 && (
+		<Box
+			sx={{
+				width: "30%", maxHeight: 100, // allows to see at least 3 items
+				overflowY: "auto",
+				// mt: 3, // top space above
+				border: "3px solid #ffffff",
+				borderRadius: 12,
+				backgroundColor: "#006CC5",
+				color: "#000000",
+				
+				// hidiing the scroll bar
+				"&::-webkit-scrollbar": {display: "none",}, scrollbarWidth: "none", msOverflowStyle: "none",
+			}}
+		>
+			{catalogData.map((item) => (
+			<Box
+				key={item.id} 
+				onClick={() => handleItemClick(item.id)}
+				sx={{padding: 2, cursor: "pointer", borderBottom: "1px solid #333", "&:hover": {backgroundColor: "secondary.dark", color: "#ffffff"},}}
+			>
+				{item.name}
+			</Box>
+			))}
 		</Box>
+		)}
+		</Box>
+		
 
 
 
