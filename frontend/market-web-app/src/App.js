@@ -8,6 +8,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import Collapse from "@mui/material/Collapse";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { LineChart } from '@mui/x-charts/LineChart';
 
 const App = () => {
     const [gridData, setGridData] = useState([]);
@@ -19,6 +20,8 @@ const App = () => {
 	const [catalogData, setCatalogData] = useState([]); // for the catalog scrollable window
 	const [showCatalog, setShowCatalog] = useState(false);
 
+	const [priceHistory, setPriceHistory] = useState({}); // for the price history of all items. only gets populated/updated as you press getPrice for individual items.
+
     let link = 'http://127.0.0.1:5000/api'
 
 	const handleToggleExpand = (id) => {
@@ -26,6 +29,9 @@ const App = () => {
 			...prev,
 			[id]: !prev[id]
 		}));
+		// also get the price history
+		getPriceHistory(id);
+		// console.log(priceHistory[id]);
 	};
 
 	const handleGetPrice = async (id) => {
@@ -37,6 +43,8 @@ const App = () => {
 				...prev,
 				[id]: price
 			}));
+			getPriceHistory(id);
+			// console.log(priceHistory[id]);
 		} 
 		catch (err) {
 			console.error(err);
@@ -86,6 +94,7 @@ const App = () => {
 		}
 	};
 
+	//api functions
 	const getAll = React.useCallback(async () => {
 		let path = '/item';
 		let url = link + path;
@@ -169,7 +178,38 @@ const App = () => {
 		}
 	}
 
-	useEffect(() => {getAll();}, [getAll]);
+	async function getPriceHistory(id) {
+		// console.log(id);
+		let path = '/item-price-history/' + id;
+		let url = link + path;
+		console.log(url);
+
+		try{
+			const response = await fetch(url);
+			const text = await response.text();
+			const cleanText = text.replace(/:NaN/g, ':null');
+			const newData = JSON.parse(cleanText);
+
+			console.log(newData.history);
+			setPriceHistory(prev => ({
+				...prev,
+				[id]: {
+    				prices: newData.history.prices,
+    				created_at: newData.history.created_at.map(d => new Date(d))
+  				}
+			}));
+			// return newData.item
+        }
+		catch (err) {
+			console.log("Something went wrong!", err);
+			alert(err);
+			return null;
+		}
+	}
+
+	// functions to call right when the app start.
+	useEffect(() => {getAll();}, [getAll]); // populate the grid
+	// get the price history info for all items at the very start. will also do this whenever the getPrice function is called.
 
   return (
     <div className="App">
@@ -294,10 +334,32 @@ const App = () => {
 								<Typography variant="body2" mt={1} sx={{wordBreak: "break-word", overflowWrap: "anywhere", whiteSpace: "normal"}}>
 									Description: {item.description}
 								</Typography>
-								
+
+								{priceHistory[item.id] && (
+									<Box>
+										<LineChart sx={{"& .MuiChartsLegend-label": {fill: "#ffffff"}}}
+											xAxis={[
+											{
+												data: priceHistory[item.id].created_at,
+												// tickLabelStyle: { fill: "#ffffff" },
+												// labelStyle: { fill: "#ffffff" }
+											}
+											]}
+											yAxis={[{
+												id: "linearAxis",
+												scaleType: "linear",
+												position: "left",
+												tickLabelStyle: { fill: "#ffffff" },
+												labelStyle: { fill: "#ffffff" }
+											}
+											]}
+											series={[{yAxisId: 'linearAxis', data: priceHistory[item.id].prices, label: 'Price'}]}
+											height={250}
+										/>
+									</Box>
+								)}
 							</Box>
 						</Collapse>
-						
 					</CardContent>
 				</Card>
 			</Grid>

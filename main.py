@@ -169,10 +169,15 @@ def get_item_price_history(item_id):
         .order_by(ItemPriceHistory.created_at.asc())
         .all()
     )
+    createdAt = []
+    prices = []
+    for entry in price_entries:
+        createdAt.append(entry.created_at.isoformat())
+        prices.append(entry.price)
 
-    data = [
-        {"price": entry.price, "created_at": entry.created_at.isoformat()} for entry in price_entries
-    ]
+    data = {"prices": prices, "created_at": createdAt}
+
+    # print(data)
 
     return jsonify({
         'success': True,
