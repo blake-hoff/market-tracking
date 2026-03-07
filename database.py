@@ -32,4 +32,4 @@ class ItemPriceHistory(db.Model):
     price = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime(), server_default=func.now(), nullable=False)
 
-    item = db.relationship("Item", backref=db.backref("price_history", lazy=True))
+    item = db.relationship("Item", backref=db.backref("price_history", lazy=True, cascade="all, delete-orphan"))

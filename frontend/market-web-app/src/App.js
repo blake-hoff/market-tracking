@@ -13,7 +13,7 @@ import { LineChart } from '@mui/x-charts/LineChart';
 const App = () => {
     const [gridData, setGridData] = useState([]);
 	const [prices, setPrices] = useState({});
-  	const [itemID, setItemID] = React.useState('');
+  	// const [itemID, setItemID] = React.useState('');
 	const [expanded, setExpanded] = useState({});
 
 	const [searchValue, setSearchValue] = useState('');
@@ -36,6 +36,7 @@ const App = () => {
 
 	const handleGetPrice = async (id) => {
 		try {
+			console.log(priceHistory[id].created_at);
 			const price = await getPrice(id);
 			console.log(price)
 
@@ -46,6 +47,18 @@ const App = () => {
 			getPriceHistory(id);
 			// console.log(priceHistory[id]);
 		} 
+		catch (err) {
+			console.error(err);
+		}
+	};
+
+	const handleDeleteItem = async (id) => {
+		// also get the price history
+		try {
+			const price = await deleteItem(id);
+			console.log(price)
+			getAll();
+		}
 		catch (err) {
 			console.error(err);
 		}
@@ -67,23 +80,23 @@ const App = () => {
 
 	// clear the current inputted itemID
 	// add the item using the api
-	const handleAddItem = async () => {
-		try {
-			const response = await getItemDetails(itemID);
-			console.log(response);
+	// const handleAddItem = async () => {
+	// 	try {
+	// 		const response = await getItemDetails(itemID);
+	// 		console.log(response);
 
-			setItemID('');
-			getAll();
-		} 
-		catch (err) {
-			console.error(err);
-		}
-	};
+	// 		setItemID('');
+	// 		getAll();
+	// 	} 
+	// 	catch (err) {
+	// 		console.error(err);
+	// 	}
+	// };
 
 	const handleSearch = async () => {
 		try {
 			const response = await searchCatalog(searchValue);
-			// console.log(response);
+			console.log(response);
 
 			// setSearchValue('');
 			setShowCatalog(true);
@@ -207,6 +220,28 @@ const App = () => {
 		}
 	}
 
+	async function deleteItem(id) {
+		// console.log(id);
+		let path = '/item/' + id
+		let url = link + path
+		console.log(url)
+
+		try{
+			const response = await fetch(url, {method: "DELETE"});
+			const text = await response.text();
+			const cleanText = text.replace(/:NaN/g, ':null');
+			const newData = JSON.parse(cleanText);
+
+			console.log(newData)
+			// return newData.item
+        }
+		catch (err) {
+			console.log("Something went wrong!", err);
+			alert(err);
+			return null;
+		}
+	}
+
 	// functions to call right when the app start.
 	useEffect(() => {getAll();}, [getAll]); // populate the grid
 	// get the price history info for all items at the very start. will also do this whenever the getPrice function is called.
@@ -227,26 +262,25 @@ const App = () => {
 		</AppBar>
 
 
-
-		<Box sx={{display: "flex", alignItems: "center", gap: 2, padding: 2, borderBottom: "1px solid rgba(255,255,255,0.1)"}}>
+		<Box sx={{display: "flex", alignItems: "center", gap: 2, padding: 2, borderBottom: "1px solid rgba(255,255,255,0.2)"}}>
 			{/* refresh button */}
 			<IconButton onClick={getAll} sx={{backgroundColor: "secondary.main", color: "white", "&:hover": { backgroundColor: "secondary.dark" }}}>
 				<RefreshIcon />
 			</IconButton>
 
 			{/* add item */}
-			<Button onClick={() => handleAddItem()} variant="outlined">Add Item</Button>
+			{/* <Button onClick={() => handleAddItem()} variant="outlined">Add Item</Button> */}
 			
-			<TextField 
+			{/* <TextField 
 				id="outlined-controlled" 
 				sx={{input: { color: "white" }, label: {color: "white"}, border: "1px solid rgba(0,0,255,0)", "&:hover": { backgroundColor: "secondary.dark" }}}
 				label="Input ID" 
 				value={itemID} 
 				onChange={(event) => {setItemID(event.target.value);}}
-			/>
+			/> */}
 
-			{/* search catalog*/}
-			<Button onClick={() => handleSearch()} variant="outlined">Search</Button>
+			
+			{/* <Button onClick={() => handleSearch()} variant="outlined">Search</Button> */}
 			
 			<TextField 
 				id="outlined-controlled" 
@@ -255,33 +289,37 @@ const App = () => {
 				value={searchValue} 
 				onChange={(event) => {setSearchValue(event.target.value);}}
 			/>
-		{/* catalog search results */}
-		{showCatalog && catalogData.length > 0 && (
-		<Box
-			sx={{
-				width: "30%", maxHeight: 100, // allows to see at least 3 items
-				overflowY: "auto",
-				// mt: 3, // top space above
-				border: "3px solid #ffffff",
-				borderRadius: 12,
-				backgroundColor: "#006CC5",
-				color: "#000000",
-				
-				// hidiing the scroll bar
-				"&::-webkit-scrollbar": {display: "none",}, scrollbarWidth: "none", msOverflowStyle: "none",
-			}}
-		>
-			{catalogData.map((item) => (
-			<Box
-				key={item.id} 
-				onClick={() => handleItemClick(item.id)}
-				sx={{padding: 2, cursor: "pointer", borderBottom: "1px solid #333", "&:hover": {backgroundColor: "secondary.dark", color: "#ffffff"},}}
-			>
-				{item.name}
-			</Box>
-			))}
-		</Box>
-		)}
+
+			{/* search catalog*/}
+			<Button onClick={() => handleSearch()} variant="outlined">Search</Button>
+
+			{/* catalog search results */}
+			{showCatalog && catalogData.length > 0 && (
+				<Box
+					sx={{
+						width: "30%", maxHeight: 100, // allows to see at least 3 items
+						overflowY: "auto",
+						// mt: 3, // top space above
+						border: "3px solid #ffffff",
+						borderRadius: 12,
+						backgroundColor: "#006CC5",
+						color: "#000000",
+						
+						// hidiing the scroll bar
+						"&::-webkit-scrollbar": {display: "none",}, scrollbarWidth: "none", msOverflowStyle: "none",
+					}}
+				>
+					{catalogData.map((item) => (
+					<Box
+						key={item.id} 
+						onClick={() => handleItemClick(item.id)}
+						sx={{padding: 2, cursor: "pointer", borderBottom: "1px solid #333", "&:hover": {backgroundColor: "secondary.dark", color: "#ffffff"},}}
+					>
+						{item.name}
+					</Box>
+					))}
+				</Box>
+			)}
 		</Box>
 		
 
@@ -311,9 +349,22 @@ const App = () => {
 
 						<Collapse in={expanded[item.id]} timeout="auto" unmountOnExit>
 							<Box mt={2}>
-								<Typography variant="body2">
-									ID: {item.id}
-								</Typography>
+								
+
+								<Box display="flex" justifyContent="space-between" alignItems="center">
+									<Typography variant="body2">
+										ID: {item.id}
+									</Typography>
+
+									<Button
+										variant="outlined"
+										color="error"
+										size="small"
+										onClick={() => handleDeleteItem(item.id)}
+									>
+										Delete Item
+									</Button>
+								</Box>
 
 								<Typography variant="body2" mt={1} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
 									<span>Price:</span>
@@ -341,8 +392,14 @@ const App = () => {
 											xAxis={[
 											{
 												data: priceHistory[item.id].created_at,
-												// tickLabelStyle: { fill: "#ffffff" },
-												// labelStyle: { fill: "#ffffff" }
+												scaleType: "time",
+												valueFormatter: (date) =>
+													date.toLocaleDateString(undefined, {
+													month: "short",
+													day: "numeric"
+												}),
+												tickLabelStyle: { fill: "#ffffff" },
+												labelStyle: { fill: "#ffffff" }
 											}
 											]}
 											yAxis={[{
@@ -353,7 +410,7 @@ const App = () => {
 												labelStyle: { fill: "#ffffff" }
 											}
 											]}
-											series={[{yAxisId: 'linearAxis', data: priceHistory[item.id].prices, label: 'Price'}]}
+											series={[{yAxisId: 'linearAxis', data: priceHistory[item.id].prices}]}
 											height={250}
 										/>
 									</Box>

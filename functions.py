@@ -1,6 +1,3 @@
-# from bs4 import BeautifulSoup
-from tkinter.ttk import Label
-
 import requests
 import json
 import re

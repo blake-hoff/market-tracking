@@ -97,12 +97,26 @@ def get_item_details(item_id):
         'item': item_data
     }), 200
 
-    # Link item to user
-    # user_item = UserItem(user_id=current_user.id, item_id=item.id)
-    # db.session.add(user_item)
-    # db.session.commit()
 
-    # get info from roblox using their api and the given itemID.
+@app.route('/api/item/<int:item_id>', methods=['DELETE'])
+def delete_item(item_id):
+    # see if it is in the backends database already.
+    item = Item.query.filter_by(roblox_item_id=item_id).first()
+
+    # if it is in the database we need to delete it.
+    if item:
+        # call to the function in functions.py, to make the online request to the roblox API
+        db.session.delete(item)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+        }), 200
+    else:
+        return jsonify({
+            'success': False,
+        }), 200
+
 
 @app.route('/api/item-price/<int:item_id>', methods=['GET'])
 def get_item_price(item_id):
