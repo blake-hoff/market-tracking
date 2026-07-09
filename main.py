@@ -30,6 +30,7 @@ def base_page():
 def get_all_items():
     """Get all items in database"""
     items = Item.query.all()
+    items.reverse()
 
     #this uses flask login which I have not set up yet.
     # user_items = UserItem.query.filter_by(user_id=current_user.id).all()
