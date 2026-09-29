@@ -22,7 +22,8 @@ const App = () => {
 
 	const [priceHistory, setPriceHistory] = useState({}); // for the price history of all items. only gets populated/updated as you press getPrice for individual items.
 
-    let link = 'http://127.0.0.1:5000/api'
+    let serverURL = 'http://127.0.0.1:5000/api'
+	let siteLogo = "/logo192.png" // starts by looking in the public folder
 
 	const handleToggleExpand = (id) => {
 		setExpanded(prev => ({
@@ -96,7 +97,7 @@ const App = () => {
 	//api functions
 	const getAll = React.useCallback(async () => {
 		let path = '/item';
-		let url = link + path;
+		let url = serverURL + path;
 
 		try {
 			const response = await fetch(url);
@@ -109,11 +110,11 @@ const App = () => {
 		catch (err) {
 			console.log("Something went wrong!", err);
 		}
-	}, [link]);
+	}, [serverURL]);
 
 	async function searchCatalog(keyword) {
 		let path = '/search-roblox-catalog?keyword=' + keyword
-		let url = link + path
+		let url = serverURL + path
 		console.log(url)
 
 		try{
@@ -136,7 +137,7 @@ const App = () => {
 	async function getPrice(id) {
 		// console.log(id);
 		let path = '/item-price/' + id
-		let url = link + path
+		let url = serverURL + path
 		console.log(url)
 
 		try{
@@ -158,7 +159,7 @@ const App = () => {
 	async function getItemDetails(id) {
 		// console.log(id);
 		let path = '/item/' + id
-		let url = link + path
+		let url = serverURL + path
 		console.log(url)
 
 		try{
@@ -180,7 +181,7 @@ const App = () => {
 	async function getPriceHistory(id) {
 		// console.log(id);
 		let path = '/item-price-history/' + id;
-		let url = link + path;
+		let url = serverURL + path;
 		console.log(url);
 
 		try{
@@ -209,7 +210,7 @@ const App = () => {
 	async function deleteItem(id) {
 		// console.log(id);
 		let path = '/item/' + id
-		let url = link + path
+		let url = serverURL + path
 		console.log(url)
 
 		try{
@@ -237,7 +238,7 @@ const App = () => {
 		<AppBar position="static" color="primary">
 			<Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
 				<Box display="flex" alignItems="center" gap={2}>
-					<img src="https://tr.rbxcdn.com/180DAY-8b91ad6a742a8bfb3b12c6cff5e3cc54/420/420/Hat/Png/noFilter" alt="mrkttrak" style={{ height: 35 }}/>
+					<img src={siteLogo} alt="mrkttrak" style={{ height: 35 }}/>
 
 					<Typography variant="h6" fontWeight="bold">
 						RoTrack
