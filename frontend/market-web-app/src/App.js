@@ -29,9 +29,10 @@ const App = () => {
 			...prev,
 			[id]: !prev[id]
 		}));
-		// also get the price history
-		getPriceHistory(id);
-		// console.log(priceHistory[id]);
+		// only get the price history if the element is now opened
+		if (!expanded[id]){
+			getPriceHistory(id);
+		}
 	};
 
 	const handleGetPrice = async (id) => {
@@ -77,21 +78,6 @@ const App = () => {
 			console.error(err);
 		}
 	};
-
-	// clear the current inputted itemID
-	// add the item using the api
-	// const handleAddItem = async () => {
-	// 	try {
-	// 		const response = await getItemDetails(itemID);
-	// 		console.log(response);
-
-	// 		setItemID('');
-	// 		getAll();
-	// 	} 
-	// 	catch (err) {
-	// 		console.error(err);
-	// 	}
-	// };
 
 	const handleSearch = async () => {
 		try {
@@ -267,20 +253,6 @@ const App = () => {
 			<IconButton onClick={getAll} sx={{backgroundColor: "secondary.main", color: "white", "&:hover": { backgroundColor: "secondary.dark" }}}>
 				<RefreshIcon />
 			</IconButton>
-
-			{/* add item */}
-			{/* <Button onClick={() => handleAddItem()} variant="outlined">Add Item</Button> */}
-			
-			{/* <TextField 
-				id="outlined-controlled" 
-				sx={{input: { color: "white" }, label: {color: "white"}, border: "1px solid rgba(0,0,255,0)", "&:hover": { backgroundColor: "secondary.dark" }}}
-				label="Input ID" 
-				value={itemID} 
-				onChange={(event) => {setItemID(event.target.value);}}
-			/> */}
-
-			
-			{/* <Button onClick={() => handleSearch()} variant="outlined">Search</Button> */}
 			
 			<TextField 
 				id="outlined-controlled" 
@@ -323,11 +295,9 @@ const App = () => {
 		</Box>
 		
 
-
-
 		<Grid container spacing={2} mt={4} justifyContent={'center'}>
 		{gridData.map((item) => (
-			<Grid item xs={12} sm={6} md={4} key={item.id}>
+			<Grid key={item.id}>
 				<Card
 				sx={{backgroundColor: "#222", color: "white", width: "100%", maxWidth: 400, overflow: "hidden"}}>
 					<CardMedia component="img" height="400" image={item.icon} alt={item.name}/>
@@ -345,6 +315,13 @@ const App = () => {
 							>
 							{expanded[item.id] ? <VisibilityOffIcon /> : <VisibilityIcon />}
 							</IconButton>
+
+							{/* {expanded[item.id] ? 
+							<IconButton>
+								<VisibilityOffIcon />
+							</IconButton> 
+								: 
+								<VisibilityIcon />} */}
 						</Box>
 
 						<Collapse in={expanded[item.id]} timeout="auto" unmountOnExit>

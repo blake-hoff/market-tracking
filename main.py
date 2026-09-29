@@ -27,7 +27,7 @@ def base_page():
 
 #get all items
 @app.route('/api/item/', methods=['GET'])
-def get_all_items():
+def get_server_items():
     """Get all items in database"""
     items = Item.query.all()
     items.reverse()
