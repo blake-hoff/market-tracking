@@ -12,6 +12,7 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     roblox_item_id = db.Column(db.String(50), unique=True, nullable=False)
     roblox_product_id = db.Column(db.String(50), unique=True, nullable=False)
+    roblox_upload_date = db.Column(db.DateTime(timezone=True), nullable=True)
 
 
     name = db.Column(db.String(255), nullable=False)
@@ -22,7 +23,7 @@ class Item(db.Model):
     original_price = db.Column(db.String(50), nullable=True)
 
     icon = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime(),server_default=func.now(),nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 class ItemPriceHistory(db.Model):
     __tablename__ = "item_price_history"
@@ -30,6 +31,6 @@ class ItemPriceHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey("items.id"), nullable=False)
     price = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime(), server_default=func.now(), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     item = db.relationship("Item", backref=db.backref("price_history", lazy=True, cascade="all, delete-orphan"))

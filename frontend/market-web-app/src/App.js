@@ -13,7 +13,6 @@ import { LineChart } from '@mui/x-charts/LineChart';
 const App = () => {
     const [gridData, setGridData] = useState([]);
 	const [prices, setPrices] = useState({});
-  	// const [itemID, setItemID] = React.useState('');
 	const [expanded, setExpanded] = useState({});
 
 	const [searchValue, setSearchValue] = useState('');
@@ -25,13 +24,15 @@ const App = () => {
     let serverURL = 'http://127.0.0.1:5000/api'
 	let siteLogo = "/logo192.png" // starts by looking in the public folder
 
-	const handleToggleExpand = (id) => {
+	const handleToggleExpand = async (id) => {
 		setExpanded(prev => ({
 			...prev,
 			[id]: !prev[id]
 		}));
 		// only get the price history if the element is now opened
 		if (!expanded[id]){
+			// handleGetPrice(id);
+			// handleItemClick(id);
 			getPriceHistory(id);
 		}
 	};
@@ -68,11 +69,9 @@ const App = () => {
 
 	const handleItemClick = async (id) => {
 		try {
-			// setItemID(id)
 			const response = await getItemDetails(id);
 			console.log(response);
 
-			// setItemID('');
 			getAll();
 		} 
 		catch (err) {
@@ -104,7 +103,7 @@ const App = () => {
 			const text = await response.text();
 			const cleanText = text.replace(/:NaN/g, ':null');
 			const newData = JSON.parse(cleanText);
-
+			console.log(newData);
 			setGridData(newData.items);
 		} 
 		catch (err) {
@@ -306,28 +305,20 @@ const App = () => {
 					<CardContent>
 						<Box display="flex" justifyContent="space-between" alignItems="center">
 							<Typography variant="h6">
-							{item.name}
+								{item.name}
 							</Typography>
 
 							<IconButton
 								size="small"
 								onClick={() => handleToggleExpand(item.id)}
-								sx={{ color: "white" }}
+								sx={{ color: "#ffffff" }}
 							>
-							{expanded[item.id] ? <VisibilityOffIcon /> : <VisibilityIcon />}
+								{expanded[item.id] ? <VisibilityOffIcon /> : <VisibilityIcon />}
 							</IconButton>
-
-							{/* {expanded[item.id] ? 
-							<IconButton>
-								<VisibilityOffIcon />
-							</IconButton> 
-								: 
-								<VisibilityIcon />} */}
 						</Box>
 
 						<Collapse in={expanded[item.id]} timeout="auto" unmountOnExit>
 							<Box mt={2}>
-								
 
 								<Box display="flex" justifyContent="space-between" alignItems="center">
 									<Typography variant="body2">
@@ -363,6 +354,10 @@ const App = () => {
 								<Typography variant="body2" mt={1} sx={{wordBreak: "break-word", overflowWrap: "anywhere", whiteSpace: "normal"}}>
 									Description: {item.description}
 								</Typography>
+								
+								{(item.upload_date !== null) && <Typography variant="body2" mt={1}>
+									Upload Date: {item.upload_date}
+								</Typography>}
 
 								{priceHistory[item.id] && (
 									<Box>

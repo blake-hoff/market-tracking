@@ -1,0 +1,30 @@
+# IF there is no venv folder yet, use:
+# "python3 -m venv .venv"
+
+# To use the venv use:
+# "source .venv/bin/activate"
+
+# Now, with the virtual environment active,
+# to install the following required packages, use:
+# "pip install -r requirements.txt"
+datetime
+
+flask
+
+flask_cors
+
+requests
+
+flask_sqlalchemy
+
+sqlalchemy
+
+flask_migrate
+
+email_validator
+
+dotenv
+
+pytest
+
+Flask-JWT-Extended

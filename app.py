@@ -2,6 +2,8 @@ import datetime
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_migrate import Migrate
+
 from database import db, Item, ItemPriceHistory
 from functions import load_roblosecurity, get_roblox_item_details, get_item_img_url, getItemPrice, searchCatalog
 import requests
@@ -15,7 +17,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-cookie_key = load_roblosecurity() #need this to not get timed out
+migrate = Migrate(app, db)
+
+cookie_key = load_roblosecurity() # need this to not get timed out
 
 # Class Routes
 #base page
@@ -32,57 +36,70 @@ def get_server_items():
     items = Item.query.all()
     items.reverse()
 
-    #this uses flask login which I have not set up yet.
-    # user_items = UserItem.query.filter_by(user_id=current_user.id).all()
-    # for ui in user_items:
-    #     print(ui.item.name, ui.item.description)
-
     return jsonify({
         'success': True,
-        'items': [{'id': item.roblox_item_id, 'name': item.name, 'date': item.created_at, 'icon': item.icon, 'description': item.description, 'quantity': item.quantity} for item in items]
+        'items': [{'id': item.roblox_item_id, 'name': item.name, 'date': item.created_at, 'upload_date': item.roblox_upload_date, 'icon': item.icon, 'description': item.description, 'quantity': item.quantity} for item in items]
     }), 200
 
 #Create or return an itemID to the database
 @app.route('/api/item/<int:item_id>', methods=['GET'])
 def get_item_details(item_id):
-    # see if it is in the backends database already.
+
+    # call to the function in functions.py, to make the online request to the roblox API
+    itemDetails = get_roblox_item_details(item_id, cookie_key)
+    if not itemDetails: # if the itemDetails fails due to not a 404
+        return jsonify({
+            'success': False,
+            'message': "Could not find item, or the request server did not respond.",
+            'errors-roblox': itemDetails.json().get('errors'),
+            'item': {"id": item_id, "Name": "Null", "Description": "Null"},
+            'status-code': itemDetails.status_code
+        }), 500
+
+    
+    # print(itemDetails)
+    productID = itemDetails.get('productId')
+    uploadDate = datetime.datetime.fromisoformat(itemDetails.get('itemCreatedUtc').replace("Z", "+00:00"))
+    itemName = itemDetails.get('name')
+    itemDesc = itemDetails.get('description')
+    itemQuantity = itemDetails.get('totalQuantity')
+    originalPrice = itemDetails.get('price')
+    isLimited = 'LimitedUnique' in itemDetails.get('itemRestrictions') or 'Limited' in itemDetails.get('itemRestrictions')
+    iconUrl = get_item_img_url(item_id, cookie_key) # images sizes: 110, 150, 420
+
     item = Item.query.filter_by(roblox_item_id=item_id).first()
+    # determine if it needs to be updated or added to the db
+    if item: # updated
+        print(f"updating {item_id}")
+        item.roblox_item_id = item_id
+        item.roblox_product_id = productID if productID else item.roblox_product_id
+        item.roblox_upload_date = uploadDate if uploadDate else item.roblox_upload_date
+        item.name = itemName if itemName else item.name
+        item.description = itemDesc if itemDesc else item.description
+        item.is_limited = isLimited if isLimited else item.is_limited
+        item.quantity = itemQuantity if itemQuantity else item.quantity
+        item.original_price = originalPrice if originalPrice else item.original_price
+        item.icon = iconUrl if iconUrl else item.icon
 
-    # if it is not in the database we need to add it.
-    if not item:
-        # call to the function in functions.py, to make the online request to the roblox API
-        itemDetails = get_roblox_item_details(item_id, cookie_key)
+        db.session.commit()
 
-        if not itemDetails: # if the itemDetails fails due to not a 404
-            return jsonify({
-                'success': False,
-                'message': "Could not find item, or the request server did not respond.",
-                'errors-roblox': itemDetails.json().get('errors'),
-                'item': {"id": item_id, "Name": "Null", "Description": "Null"},
-                'status-code': itemDetails.status_code
-            }), 500
+    else: # added
+        print(f"creating {item_id}")
 
-        if itemDetails is not None:
-            itemName = itemDetails.get('name')
-            itemDesc = itemDetails.get('description')
-            itemQuantity = itemDetails.get('totalQuantity')
-            productID = itemDetails.get('productId')
-            originalPrice = itemDetails.get('price')
-            isLimited = 'LimitedUnique' in itemDetails.get('itemRestrictions') or 'Limited' in itemDetails.get('itemRestrictions')
-            iconUrl = get_item_img_url(item_id, cookie_key) # images sizes: 110, 150, 420
-
-            #add to database
-            item = Item(roblox_item_id=item_id,
-                        roblox_product_id=productID,
-                        name=itemName,
-                        description=itemDesc,
-                        is_limited=isLimited,
-                        quantity=itemQuantity,
-                        original_price=originalPrice,
-                        icon=iconUrl
-                        )
-            db.session.add(item)
-            db.session.commit()
+        # create item row object
+        item = Item(roblox_item_id=item_id,
+                    roblox_product_id=productID,
+                    name=itemName,
+                    description=itemDesc,
+                    is_limited=isLimited,
+                    quantity=itemQuantity,
+                    original_price=originalPrice,
+                    icon=iconUrl,
+                    roblox_upload_date=uploadDate
+                    )
+            
+        db.session.add(item)
+        db.session.commit()
 
     item_data = {
         "id": item.roblox_item_id,
@@ -90,7 +107,8 @@ def get_item_details(item_id):
         "description": item.description,
         "quantity": item.quantity,
         "time-created": item.created_at,
-        "icon": item.icon
+        "icon": item.icon,
+        "upload-date": item.roblox_upload_date
     }
 
     return jsonify({
