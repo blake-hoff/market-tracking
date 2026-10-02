@@ -33,12 +33,12 @@ def base_page():
 @app.route('/api/item/', methods=['GET'])
 def get_server_items():
     """Get all items in database"""
-    items = Item.query.all()
-    items.reverse()
+    items = Item.query.order_by(Item.roblox_upload_date.desc()).all()
+    # items.reverse()
 
     return jsonify({
         'success': True,
-        'items': [{'id': item.roblox_item_id, 'name': item.name, 'date': item.created_at, 'upload_date': item.roblox_upload_date, 'icon': item.icon, 'description': item.description, 'quantity': item.quantity} for item in items]
+        'items': [{'id': item.roblox_item_id, 'name': item.name, 'date': item.created_at, 'upload_date': item.roblox_upload_date, 'limited': item.is_limited, 'icon': item.icon, 'description': item.description, 'quantity': item.quantity} for item in items]
     }), 200
 
 #Create or return an itemID to the database

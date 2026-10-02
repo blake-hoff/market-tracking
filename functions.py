@@ -30,23 +30,11 @@ def get_roblox_item_details(item_id, roblosecurity):
 
 def get_item_img_url(item_id, roblosecurity):
     img_url = ''
-    pixel_size = 420
-    # pixel_size = 110
-    # pixel_size = 150
+    pixel_size = "420x420"
+    # pixel_size = "384x216"
 
-    url = f'https://thumbnails.roblox.com/v1/assets?assetIds={item_id}&format=png&isCircular=false&size={pixel_size}x{pixel_size}'
+    url = f'https://thumbnails.roblox.com/v1/assets?assetIds={item_id}&format=png&isCircular=false&size={pixel_size}'
 
-    # headers = {
-    #           "accept": "application/json, text/plain, */*",
-    #           "accept-language": "en-US,en;q=0.9",
-    #           "priority": "u=1, i",
-    #           "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
-    #           "sec-ch-ua-mobile": "?0",
-    #           "sec-ch-ua-platform": "\"macOS\"",
-    #           "sec-fetch-dest": "empty",
-    #           "sec-fetch-mode": "cors",
-    #           "sec-fetch-site": "same-site"
-    #       }
     headers = {
         "User-Agent": USER_AGENT,
         "Accept": "application/json",

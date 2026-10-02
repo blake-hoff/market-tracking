@@ -3,12 +3,14 @@ import * as React from 'react';
 
 import Button from '@mui/material/Button';
 import { useState, useEffect } from 'react';
-import {Grid, Card, CardMedia, CardContent, Typography, Box, IconButton, AppBar, Toolbar, TextField} from '@mui/material';
+import {Card, CardMedia, CardContent, Typography, Box, IconButton, AppBar, Toolbar, TextField} from '@mui/material';
+import { LineChart } from '@mui/x-charts/LineChart';
+
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Collapse from "@mui/material/Collapse";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { LineChart } from '@mui/x-charts/LineChart';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 const App = () => {
     const [gridData, setGridData] = useState([]);
@@ -277,7 +279,7 @@ const App = () => {
 						backgroundColor: "#006CC5",
 						color: "#000000",
 						
-						// hidiing the scroll bar
+						// hiding the scroll bar
 						"&::-webkit-scrollbar": {display: "none",}, scrollbarWidth: "none", msOverflowStyle: "none",
 					}}
 				>
@@ -295,23 +297,61 @@ const App = () => {
 		</Box>
 		
 
-		<Grid container spacing={2} mt={4} justifyContent={'center'}>
+		<Box 
+			sx={{
+				display: 'grid',
+				gridTemplateColumns: {
+					// allows grid sizing per row based on screen size
+					xs: 'repeat(1, 1fr)',
+					sm: 'repeat(2, 1fr)',
+					md: 'repeat(3, 1fr)',
+					lg: 'repeat(4, 1fr)' 
+				},
+				gap: 2, 
+				mt: 4,
+				paddingX: 2
+			}}
+		>
 		{gridData.map((item) => (
-			<Grid key={item.id}>
-				<Card
-				sx={{backgroundColor: "#222", color: "white", width: "100%", maxWidth: 400, overflow: "hidden"}}>
-					<CardMedia component="img" height="400" image={item.icon} alt={item.name}/>
+			<Card
+				key={item.id}
+				sx={{backgroundColor: "#222", color: "white", width: "100%", overflow: "hidden"}}
+			>
+					<CardMedia component="img" height="420" image={item.icon} alt={item.name}/>
 					
 					<CardContent>
 						<Box display="flex" justifyContent="space-between" alignItems="center">
-							<Typography variant="h6">
+							{item.limited && 
+							<Button size="small" sx={{mr: 1.5, flexShrink: 0, color: "#ffffff", borderColor: "#00cf00", borderWidth:"0px", backgroundColor: "#00cf00", "&:hover": { backgroundColor: "#00cf00", color: "#ffffff", borderColor: "#ffffff" }}} variant="outlined">
+								Limited
+							</Button>}
+
+							<Typography 
+								variant="h6" 
+								sx={{
+									whiteSpace: 'nowrap',
+									overflow: 'hidden',
+									textOverflow: 'ellipsis',
+									flexGrow: 1, 
+									marginRight: 1 
+								}}
+							>
 								{item.name}
-							</Typography>
+							</Typography>							
+
+							<IconButton 
+								component="a"
+								href={`https://www.roblox.com/catalog/${item.id}`}
+								target="_blank" // opens in new tab
+								rel="noopener noreferrer" // security
+								sx={{color: "#ffffff", "&:hover": { backgroundColor: "#ffffff", color: "#000000" }}}>
+								<OpenInNewIcon />
+							</IconButton>
 
 							<IconButton
 								size="small"
 								onClick={() => handleToggleExpand(item.id)}
-								sx={{ color: "#ffffff" }}
+								sx={{color: "#ffffff", "&:hover": { backgroundColor: "#ffffff", color: "#000000" }}}
 							>
 								{expanded[item.id] ? <VisibilityOffIcon /> : <VisibilityIcon />}
 							</IconButton>
@@ -321,42 +361,34 @@ const App = () => {
 							<Box mt={2}>
 
 								<Box display="flex" justifyContent="space-between" alignItems="center">
-									<Typography variant="body2">
-										ID: {item.id}
-									</Typography>
+									<Button size="small" sx={{color: "#9090cf", borderColor: "#9090cf", borderWidth:"0px", "&:hover": { backgroundColor: "#9090cf", color: "#ffffff", borderColor: "#ffffff" }}} variant="outlined" onClick={() => handleGetPrice(item.id)}>
+										Get Price
+									</Button>
 
 									<Button
 										variant="outlined"
-										color="error"
 										size="small"
+										sx={{color: "#EF4444", borderColor: "#EF4444", borderWidth:"0px", "&:hover": { backgroundColor: "#EF4444", color: "#ffffff", borderColor: "#ffffff" }}}
 										onClick={() => handleDeleteItem(item.id)}
 									>
-										Delete Item
+										Delete
 									</Button>
 								</Box>
 
-								<Typography variant="body2" mt={1} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-									<span>Price:</span>
+								{prices[item.id] && <Typography variant="body2" mt={1} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+									Best Price: {prices[item.id]}
+								</Typography>}
 
-									{prices[item.id] !== undefined ? (
-										<span>{prices[item.id]}</span>
-									) : null}
-
-									<Button size="small" variant="outlined" onClick={() => handleGetPrice(item.id)}>
-										Get Price
-									</Button>
-								</Typography>
-
-								<Typography variant="body2" mt={1}>
+								{item.quantity !== "0" && <Typography variant="body2" mt={1}>
 									Quantity: {item.quantity}
-								</Typography>
+								</Typography>}
 
 								<Typography variant="body2" mt={1} sx={{wordBreak: "break-word", overflowWrap: "anywhere", whiteSpace: "normal"}}>
 									Description: {item.description}
 								</Typography>
 								
 								{(item.upload_date !== null) && <Typography variant="body2" mt={1}>
-									Upload Date: {item.upload_date}
+									Created {item.upload_date}
 								</Typography>}
 
 								{priceHistory[item.id] && (
@@ -392,9 +424,8 @@ const App = () => {
 						</Collapse>
 					</CardContent>
 				</Card>
-			</Grid>
 		))}
-		</Grid>
+		</Box>
     </div>
   );
 }
