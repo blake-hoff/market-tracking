@@ -11,6 +11,7 @@ import Collapse from "@mui/material/Collapse";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const App = () => {
     const [gridData, setGridData] = useState([]);
@@ -39,18 +40,20 @@ const App = () => {
 		}
 	};
 
-	const handleGetPrice = async (id) => {
+	const handleItemRefresh = async (id) => {
 		try {
-			console.log(priceHistory[id].created_at);
+			const response = await getItemDetails(id);
+			console.log(response);
+
+			getAll();
 			const price = await getPrice(id);
-			console.log(price)
+			// console.log(price)
 
 			setPrices(prev => ({
 				...prev,
 				[id]: price
 			}));
 			getPriceHistory(id);
-			// console.log(priceHistory[id]);
 		} 
 		catch (err) {
 			console.error(err);
@@ -58,10 +61,9 @@ const App = () => {
 	};
 
 	const handleDeleteItem = async (id) => {
-		// also get the price history
 		try {
-			const price = await deleteItem(id);
-			console.log(price)
+			const response = await deleteItem(id);
+			console.log(response)
 			getAll();
 		}
 		catch (err) {
@@ -86,27 +88,49 @@ const App = () => {
 			const response = await searchCatalog(searchValue);
 			console.log(response);
 
-			// setSearchValue('');
 			setShowCatalog(true);
-			// getAll();
 		} 
 		catch (err) {
 			console.error(err);
 		}
 	};
 
+	const handleSearchNew = async () => {
+		try {
+			const response = await searchCatalogNew();
+			console.log(response);
+
+			await getAll();
+		} 
+		catch (err) {
+			console.error(err);
+		}
+	};
+
+	async function searchCatalogNew() {
+		let url = `${serverURL}/get-new-items`;
+
+		try{
+			const response = await fetch(url);
+			const responseData = await response.json();
+			console.log(responseData);
+			
+        }
+		catch (err) {
+			console.log("Something went wrong!", err);
+			alert(err);
+		}
+	}
+
 	//api functions
 	const getAll = React.useCallback(async () => {
-		let path = '/item';
-		let url = serverURL + path;
+		let url = `${serverURL}/item`;
 
 		try {
 			const response = await fetch(url);
-			const text = await response.text();
-			const cleanText = text.replace(/:NaN/g, ':null');
-			const newData = JSON.parse(cleanText);
-			console.log(newData);
-			setGridData(newData.items);
+			const responseData = await response.json();
+			console.log(responseData);
+			setGridData(responseData.items);
 		} 
 		catch (err) {
 			console.log("Something went wrong!", err);
@@ -114,32 +138,26 @@ const App = () => {
 	}, [serverURL]);
 
 	async function searchCatalog(keyword) {
-		let path = '/search-roblox-catalog?keyword=' + keyword
-		let url = serverURL + path
-		console.log(url)
+		let url = `${serverURL}/search-roblox-catalog?keyword=${keyword}`;
 
 		try{
 			const response = await fetch(url);
-			const text = await response.text();
-			const cleanText = text.replace(/:NaN/g, ':null');
-			const newData = JSON.parse(cleanText);
+			const responseData = await response.json();
 			
-			console.log(newData.item)
-			setCatalogData(newData.item)
-			// return newData.item
+			console.log(responseData.item);
+			setCatalogData(responseData.item);
         }
 		catch (err) {
 			console.log("Something went wrong!", err);
 			alert(err);
-			return null;
 		}
 	}
 
 	async function getPrice(id) {
 		// console.log(id);
-		let path = '/item-price/' + id
-		let url = serverURL + path
-		console.log(url)
+		let path = '/item-price/' + id;
+		let url = serverURL + path;
+		console.log(url);
 
 		try{
 			const response = await fetch(url);
@@ -158,10 +176,7 @@ const App = () => {
 	}
 
 	async function getItemDetails(id) {
-		// console.log(id);
-		let path = '/item/' + id
-		let url = serverURL + path
-		console.log(url)
+		let url = `${serverURL}/item/${id}`;
 
 		try{
 			const response = await fetch(url);
@@ -170,7 +185,6 @@ const App = () => {
 			const newData = JSON.parse(cleanText);
 
 			console.log(newData.item)
-			// return newData.item
         }
 		catch (err) {
 			console.log("Something went wrong!", err);
@@ -180,16 +194,11 @@ const App = () => {
 	}
 
 	async function getPriceHistory(id) {
-		// console.log(id);
-		let path = '/item-price-history/' + id;
-		let url = serverURL + path;
-		console.log(url);
+		let url = `${serverURL}/item-price-history/${id}`;
 
 		try{
 			const response = await fetch(url);
-			const text = await response.text();
-			const cleanText = text.replace(/:NaN/g, ':null');
-			const newData = JSON.parse(cleanText);
+			const newData = await response.json()
 
 			console.log(newData.history);
 			setPriceHistory(prev => ({
@@ -209,19 +218,13 @@ const App = () => {
 	}
 
 	async function deleteItem(id) {
-		// console.log(id);
-		let path = '/item/' + id
-		let url = serverURL + path
-		console.log(url)
+		let url = `${serverURL}/item/${id}`;
 
 		try{
 			const response = await fetch(url, {method: "DELETE"});
-			const text = await response.text();
-			const cleanText = text.replace(/:NaN/g, ':null');
-			const newData = JSON.parse(cleanText);
+			const newData = await response.json();
 
 			console.log(newData)
-			// return newData.item
         }
 		catch (err) {
 			console.log("Something went wrong!", err);
@@ -266,6 +269,7 @@ const App = () => {
 
 			{/* search catalog*/}
 			<Button onClick={() => handleSearch()} variant="outlined">Search</Button>
+			<Button onClick={() => handleSearchNew()} variant="outlined">Search New</Button>
 
 			{/* catalog search results */}
 			{showCatalog && catalogData.length > 0 && (
@@ -337,7 +341,16 @@ const App = () => {
 								}}
 							>
 								{item.name}
-							</Typography>							
+							</Typography>
+
+							{/* {!expanded[item.id] && <IconButton
+								variant="outlined"
+								size="small"
+								sx={{color: "#EF4444", borderWidth:"0px", "&:hover": { backgroundColor: "#EF4444", color: "#ffffff", borderColor: "#000000" }}}
+								onClick={() => handleDeleteItem(item.id)}
+							>
+								<DeleteIcon/>
+							</IconButton>} */}
 
 							<IconButton 
 								component="a"
@@ -361,23 +374,24 @@ const App = () => {
 							<Box mt={2}>
 
 								<Box display="flex" justifyContent="space-between" alignItems="center">
-									<Button size="small" sx={{color: "#9090cf", borderColor: "#9090cf", borderWidth:"0px", "&:hover": { backgroundColor: "#9090cf", color: "#ffffff", borderColor: "#ffffff" }}} variant="outlined" onClick={() => handleGetPrice(item.id)}>
-										Get Price
-									</Button>
+									<IconButton size="small" sx={{color: "#9090cf", borderWidth:"0px", "&:hover": { backgroundColor: "#9090cf", color: "#ffffff" }}} variant="outlined" onClick={() => handleItemRefresh(item.id)}>
+										<RefreshIcon/>
+									</IconButton>
 
-									<Button
+									<IconButton
 										variant="outlined"
 										size="small"
-										sx={{color: "#EF4444", borderColor: "#EF4444", borderWidth:"0px", "&:hover": { backgroundColor: "#EF4444", color: "#ffffff", borderColor: "#ffffff" }}}
+										sx={{color: "#EF4444", borderWidth:"0px", "&:hover": { backgroundColor: "#EF4444", color: "#ffffff", borderColor: "#000000" }}}
 										onClick={() => handleDeleteItem(item.id)}
 									>
-										Delete
-									</Button>
+										<DeleteIcon/>
+									</IconButton>
 								</Box>
 
 								{prices[item.id] && <Typography variant="body2" mt={1} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
 									Best Price: {prices[item.id]}
 								</Typography>}
+
 
 								{item.quantity !== "0" && <Typography variant="body2" mt={1}>
 									Quantity: {item.quantity}

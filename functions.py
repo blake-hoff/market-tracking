@@ -78,6 +78,31 @@ def getItemPrice(item_id, roblosecurity): # returns price, item_name, collectabl
         print("No item data returned.")
         return data
 
+def get_roblox_recents(roblosecurity):
+    limit = 10
+    url = f'https://catalog.roblox.com/v2/search/items/details?taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&creatorType=User&salesTypeFilter=1&sortType=3&includeNotForSale=true&limit={limit}'
+
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+        "Referer": "https://www.roblox.com",
+    }
+    cookies = {
+        ".ROBLOSECURITY": roblosecurity
+    }
+
+    response = requests.get(url, headers=headers, cookies=cookies)
+    if response.status_code == 200:
+        try:
+            res = response.json()
+            return res["data"]
+                
+        except json.JSONDecodeError:
+            print("Error decoding JSON.")
+            return None
+    return None
+    
+
 def load_roblosecurity(path="cookie.txt") -> str:
     with open(path, "r", encoding="utf-8") as f:
         raw = f.read().strip()

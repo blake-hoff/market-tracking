@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 
 from database import db, Item, ItemPriceHistory
-from functions import load_roblosecurity, get_roblox_item_details, get_item_img_url, getItemPrice, searchCatalog
+from functions import load_roblosecurity, get_roblox_item_details, get_item_img_url, getItemPrice, searchCatalog, get_roblox_recents
 import requests
 from sqlalchemy import asc
 
@@ -168,6 +168,60 @@ def get_item_price(item_id):
         "id": item_id
         # 'status-code': itemDetails
     }), 500
+
+@app.route('/api/get-new-items', methods=['GET'])
+def get_new_items():
+    message = "Getting all new roblox catalog items from roblox"
+    allItems = Item.query.all()
+    allIDS = [item.roblox_item_id for item in allItems]
+    print(allIDS)
+    # return jsonify({
+    #         'success': False,
+    #         'message': message
+    #         # 'item': itemDetails
+    #     }), 400
+
+    recentItems = get_roblox_recents(cookie_key)
+    # print(recentItems)
+
+    for itemDetails in recentItems:
+        # print(itemDetails)
+        item_id = str(itemDetails["id"])
+        print(type(item_id))
+        # break
+        # continue
+        if item_id not in allIDS:
+            productID = itemDetails.get('productId')
+            uploadDate = datetime.datetime.fromisoformat(itemDetails.get('itemCreatedUtc').replace("Z", "+00:00"))
+            itemName = itemDetails.get('name')
+            itemDesc = itemDetails.get('description')
+            itemQuantity = itemDetails.get('totalQuantity')
+            originalPrice = itemDetails.get('price')
+            isLimited = 'LimitedUnique' in itemDetails.get('itemRestrictions') or 'Limited' in itemDetails.get('itemRestrictions')
+            iconUrl = get_item_img_url(item_id, cookie_key) # images sizes: 110, 150, 420
+
+            # create item row object
+            item = Item(roblox_item_id=item_id,
+                        roblox_product_id=productID,
+                        name=itemName,
+                        description=itemDesc,
+                        is_limited=isLimited,
+                        quantity=itemQuantity,
+                        original_price=originalPrice,
+                        icon=iconUrl,
+                        roblox_upload_date=uploadDate
+                        )
+                
+            db.session.add(item)
+    db.session.commit()
+    
+
+    return jsonify({
+            'success': True,
+            'message': message
+            # 'item': itemDetails
+        }), 200
+
 
 @app.route('/api/search-roblox-catalog', methods=['GET'])
 def search_roblox_catalog(): # taxonomy does the accessories.
