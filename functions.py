@@ -78,8 +78,7 @@ def getItemPrice(item_id, roblosecurity): # returns price, item_name, collectabl
         print("No item data returned.")
         return data
 
-def get_roblox_recents(roblosecurity):
-    limit = 10
+def get_roblox_recents(roblosecurity, limit):
     url = f'https://catalog.roblox.com/v2/search/items/details?taxonomy=wNYJso48d1XnhMyFWT3oX3&creatorName=Roblox&creatorType=User&salesTypeFilter=1&sortType=3&includeNotForSale=true&limit={limit}'
 
     headers = {
